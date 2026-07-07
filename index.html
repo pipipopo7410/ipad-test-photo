@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>葉片微觀生態沙盒 (平板網頁精準骨架版)</title>
+    <title>葉片微觀生態沙盒 (RWD 彈性響應版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/scroll-behaviour.min.js"></script>
@@ -35,10 +35,10 @@
             --xylem-y: 48%;
         }
         
-        /* 徹底杜絕滾動軸 */
+        /* 徹底杜絕滾動軸，導入 dvh 動態視窗高度適應手機網址列 */
         html, body { 
             width: 100vw; 
-            height: 100vh; 
+            height: 100dvh; 
             overflow: hidden; 
             margin: 0; 
             padding: 0; 
@@ -50,7 +50,7 @@
         }
         body.night-mode { background: var(--bg-night); color: var(--text-night); }
         
-        /* 【全局通用框架】導覽列高度固定 44px */
+        /* 【全局通用框架】導覽列高度固定 */
         #nav-tabs-bar {
             grid-column: 1 / -1;
             display: flex;
@@ -78,36 +78,30 @@
             color: #2E7D32;
         }
 
-        /* 骨架重構：大幅優化高度比例，確保底部不被切到 */
+        /* 骨架重構：改用 auto 讓內容決定高度，1fr 拿走剩餘空間 */
         #app-container { 
             display: grid; 
-            grid-template-columns: 260px 1fr; 
-            grid-template-rows: 70px 1fr 85px; /* 縮減列高 */
+            grid-template-columns: minmax(240px, 25%) 1fr; 
+            grid-template-rows: auto 1fr auto; 
             gap: 10px; 
-            height: calc(100vh - 44px); /* 扣除導覽列 */
+            height: calc(100dvh - 44px); 
             width: 100vw;
             padding: 10px; 
             box-sizing: border-box; 
         }
 
-        #top-bar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); padding: 0 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        #top-bar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); padding: 8px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         body.night-mode #top-bar { background: rgba(30,35,50,0.85); }
         h1 { margin: 0; font-size: 1.3em; color: #2E7D32; display: flex; align-items: center; gap: 8px; }
         body.night-mode h1 { color: #81C784; }
 
-        /* 分子球：恢復拖曳設定，並加大觸控熱區 */
+        /* 分子球 */
         .molecule-bank { display: flex; gap: 15px; }
         .sphere { 
-            border-radius: 50%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-weight: bold; 
-            cursor: grab; 
-            user-select: none; 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            font-weight: bold; cursor: grab; user-select: none; 
             box-shadow: 2px 3px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); 
-            transition: transform 0.1s; 
-            touch-action: none; /* 配合 polyfill 運作 */
+            transition: transform 0.1s; touch-action: none; 
         }
         .sphere:active { cursor: grabbing; transform: scale(1.1); }
         .mol-h2o { width: 60px; height: 60px; font-size: 1.1em; background: radial-gradient(circle at 30% 30%, #e1f5fe, #29b6f6); color: #01579b; }
@@ -115,7 +109,7 @@
         .mol-o2 { width: 60px; height: 60px; font-size: 1.1em; background: radial-gradient(circle at 30% 30%, #ffcdd2, #e53935); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         .mol-glu { width: 75px; height: 75px; font-size: 1em; background: radial-gradient(circle at 30% 30%, #f3e5f5, #ab47bc); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
-        #inventory-panel { grid-column: 1 / 2; grid-row: 2 / 3; background: rgba(241, 248, 233, 0.9); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+        #inventory-panel { grid-column: 1 / 2; grid-row: 2 / 3; background: rgba(241, 248, 233, 0.9); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; overflow-y: auto; }
         body.night-mode #inventory-panel { background: rgba(30, 40, 50, 0.9); }
         
         .status-indicator { padding: 6px 8px; border-radius: 8px; font-weight: bold; font-size: 0.85em; background: rgba(0,0,0,0.1); transition: all 0.3s; margin-bottom: 2px; color: var(--text-day); }
@@ -131,6 +125,7 @@
         
         #stage { 
             grid-column: 2 / 3; grid-row: 2 / 3; 
+            background-color: #a5d6a7; /* 預設備用背景色 */
             background-image: url('background.png');
             background-size: cover; background-position: center; 
             position: relative; border-radius: 12px; box-shadow: inset 0 0 15px rgba(0,0,0,0.15); overflow: hidden; transition: filter 0.5s; 
@@ -145,7 +140,7 @@
         .starch-grain { width: 25px; height: 25px; background: radial-gradient(circle at 30% 30%, #bcaaa4, #6d4c41); border-radius: 50%; margin: 2px; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); opacity: 0.4; filter: blur(1.5px); animation: popIn 0.5s ease-out; }
         @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); opacity: 0.6; } 100% { transform: scale(1); opacity: 0.4; } }
 
-        /* 收集籃增加 padding，讓拖曳丟進來的判定範圍更寬鬆 */
+        /* 收集籃增加彈性設定 */
         .drop-zone-container { position: absolute; width: 150px; height: 95px; background: rgba(255, 255, 255, 0.85); border: 2px solid #aaa; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: all 0.3s; z-index: 4; transform: translate(-50%, -50%); }
         .drop-zone-container.active-chloro { background: rgba(230, 255, 230, 0.9); border-color: #4CAF50; }
         .drop-zone-container.active-mito { background: rgba(255, 230, 230, 0.9); border-color: #f44336; }
@@ -163,20 +158,22 @@
         #btn-unlock-resp-overlay.ready { background: rgba(255, 152, 0, 0.95); color: white; border: 2px solid #E65100; pointer-events: auto; cursor: pointer; animation: pulseReady 1.5s infinite; box-shadow: 0 0 15px rgba(255, 152, 0, 0.8); }
         @keyframes pulseReady { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-        .zone-label { background: rgba(255,255,255,0.95); padding: 2px 10px; border-radius: 12px; font-weight: bold; font-size: 0.8em; margin-top: -18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; line-height: 1.3; }
+        /* 關鍵修正：加上 pointer-events: none 避免文字標籤攔截觸控拖曳事件 */
+        .zone-label { pointer-events: none; background: rgba(255,255,255,0.95); padding: 2px 10px; border-radius: 12px; font-weight: bold; font-size: 0.8em; margin-top: -18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; line-height: 1.3; }
         #box-chloro .zone-label { color: #2E7D32; border: 2px solid #4CAF50; }
         #box-mito .zone-label { color: #c62828; border: 2px solid #f44336; }
-        .drop-zone { width: 100%; height: 100%; display: flex; justify-content: center; align-content: center; flex-wrap: wrap; gap: 4px; padding: 4px; box-sizing: border-box; }
+        
+        /* 讓 drop-zone 確實填滿整個區塊，提供最大的觸控面積 */
+        .drop-zone { flex: 1; width: 100%; display: flex; justify-content: center; align-content: center; flex-wrap: wrap; gap: 4px; padding: 4px; box-sizing: border-box; }
 
-        /* 控制面板高度微調與 padding 優化，徹底消滅切邊 */
-        #dashboard { grid-column: 1 / -1; grid-row: 3 / 4; display: flex; gap: 30px; background: rgba(232, 245, 233, 0.9); padding: 8px 30px 18px 30px; border-radius: 12px; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); box-sizing: border-box; }
+        /* 控制面板高度自動彈性 */
+        #dashboard { grid-column: 1 / -1; grid-row: 3 / 4; display: flex; gap: 20px; background: rgba(232, 245, 233, 0.9); padding: 12px 20px; border-radius: 12px; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); box-sizing: border-box; }
         body.night-mode #dashboard { background: rgba(30, 40, 50, 0.9); }
         .controls { flex: 2; display: flex; gap: 20px; align-items: center; max-width: 600px;}
         .slider-group { flex: 1; }
         .slider-group label { display: block; margin-bottom: 3px; font-weight: bold; font-size: 0.85em; }
         
-        /* 加大滑桿軌道，消除雙擊誤觸 */
-        input[type=range] { width: 100%; margin: 0; cursor: pointer; height: 30px; touch-action: none; }
+        input[type=range] { width: 100%; margin: 0; cursor: pointer; height: 25px; touch-action: none; }
         
         #btn-daynight { flex: 1; max-width: 220px; padding: 10px 15px; cursor: pointer; font-weight: bold; font-size: 1em; background: #1a237e; color: white; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: all 0.2s; }
         #btn-daynight:active { transform: scale(0.95); }
@@ -188,6 +185,7 @@
         .p-h2o { width: 37px; height: 37px; font-size: 0.75em; background: radial-gradient(circle at 30% 30%, #e1f5fe, #29b6f6); color: #01579b; }
         .p-energy { background: none; box-shadow: none; font-size: 4em; text-shadow: 0 0 20px #FFEB3B, 0 0 40px #FF9800, 0 0 60px #FF5722; }
 
+        /* 動畫設定保留原貌 */
         @keyframes h2oToChloro { 0% { left: var(--xylem-x); top: var(--xylem-y); opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 90% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { left: var(--c-x); top: var(--c-y); opacity: 0; transform: translate(-50%, -50%) scale(1); } }
         @keyframes co2ToChloro { 0% { left: var(--stoma-co2-x); top: calc(var(--stoma-co2-y) - 4%); opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 90% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { left: var(--c-x); top: var(--c-y); opacity: 0; transform: translate(-50%, -50%) scale(1); } }
         @keyframes chloroToStomaO2 { 0% { left: var(--c-x); top: var(--c-y); opacity: 0; transform: translate(-50%, -50%) scale(1); } 10% { opacity: 1; } 90% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { left: var(--stoma-o2-x); top: calc(var(--stoma-o2-y) - 4%); opacity: 0; transform: translate(-50%, -50%) scale(0.5); } }
@@ -201,14 +199,25 @@
         @keyframes mitoToStomaCO2 { 0% { left: var(--m-x); top: var(--m-y); opacity: 0; transform: translate(-50%, -50%) scale(1); } 10% { opacity: 1; } 90% { opacity: 1; transform: translate(-50%, -50%) scale(0.6); } 100% { left: var(--stoma-co2-x); top: calc(var(--stoma-co2-y) - 4%); opacity: 0; transform: translate(-50%, -50%) scale(0.5); } }
         @keyframes energyBurst { 0% { left: var(--m-x); top: var(--m-y); opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 15% { opacity: 1; transform: translate(-50%, calc(-50% - 40px)) scale(1.2); } 95% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, calc(-50% - 150px)) scale(1); } }
 
-        #orientation-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #12192c; color: white; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; text-align: center; padding: 20px; box-sizing: border-box; }
+        #orientation-warning { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #12192c; color: white; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; text-align: center; padding: 20px; box-sizing: border-box; }
         @media (orientation: portrait) { #orientation-warning { display: flex; } }
+
+        /* 響應式：針對螢幕高度較短的平板與手機，自動縮小元素避免擁擠 */
+        @media (max-height: 650px) {
+            #app-container { padding: 5px; gap: 5px; }
+            .sphere { width: 50px; height: 50px; font-size: 0.9em; }
+            .mol-glu { width: 60px; height: 60px; font-size: 0.85em; }
+            #dashboard { padding: 8px 15px; }
+            h1 { font-size: 1.1em; }
+            .drop-zone-container { width: 130px; height: 85px; }
+            #btn-unlock-resp-overlay { width: 130px; height: 85px; font-size: 0.85em; }
+        }
     </style>
 </head>
 <body>
 
 <div id="orientation-warning">
-    🔄<br><br>請將平板旋轉為<b>橫向模式</b>以進行課程互動。
+    🔄<br><br>請將裝置旋轉為<b>橫向模式</b>以進行課程互動。
 </div>
 
 <div id="nav-tabs-bar">
@@ -240,7 +249,7 @@
         <div class="inv-item"><div class="inv-label"><span>💨 淨產氧速率</span><span id="val-o2">0%</span></div><div class="inv-bar-bg"><div class="inv-bar" id="bar-o2"></div></div></div>
         <div class="inv-item"><div class="inv-label"><span>💨 淨排碳速率</span><span id="val-co2">0%</span></div><div class="inv-bar-bg"><div class="inv-bar" id="bar-co2"></div></div></div>
         
-        <div class="inv-item" style="margin-top:20px;"><div class="inv-label"><span>🥔 澱粉累積量</span><span id="val-starch">0%</span></div><div class="inv-bar-bg"><div class="inv-bar" id="bar-starch"></div></div></div>
+        <div class="inv-item" style="margin-top:10px;"><div class="inv-label"><span>🥔 澱粉累積量</span><span id="val-starch">0%</span></div><div class="inv-bar-bg"><div class="inv-bar" id="bar-starch"></div></div></div>
     </div>
 
     <div id="stage">
@@ -249,14 +258,14 @@
         <div id="starch-deposit"></div> 
         
         <div class="drop-zone-container" id="box-chloro">
-            <div class="zone-label">光合作用<br>所需反應物</div>
+            <div class="zone-label">光合作用所需</div>
             <div class="drop-zone" id="chloro-drop"></div>
         </div>
         
         <div id="btn-unlock-resp-overlay">🔒<br>觀察日夜變化<br>以解鎖</div>
         
         <div class="drop-zone-container" id="box-mito">
-            <div class="zone-label">呼吸作用<br>所需反應物</div>
+            <div class="zone-label">呼吸作用所需</div>
             <div class="drop-zone" id="mito-drop"></div>
         </div>
     </div>
@@ -277,8 +286,11 @@
 </div>
 
 <script>
-    // 啟動平板觸控拖曳補丁 (Polyfill)
-    MobileDragDrop.polyfill({ dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride });
+    // 啟動平板觸控拖曳補丁 (Polyfill)，加入 holdToDrag 幫助穩定觸控
+    MobileDragDrop.polyfill({ 
+        dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride,
+        holdToDrag: 50 
+    });
     
     // 阻斷預設行為，但排除 input[type=range] 確保滑桿在平板上能正常拉動
     window.addEventListener('touchmove', function(e) { 
@@ -313,15 +325,17 @@
         mol.addEventListener('dragstart', e => e.dataTransfer.setData('text', e.target.id));
     });
 
-    chloroDrop.addEventListener('dragover', e => e.preventDefault());
-    mitoDrop.addEventListener('dragover', e => e.preventDefault());
+    // 關鍵修正：必須同時攔截 dragenter 與 dragover，行動版拖曳套件才能精準判斷置放區
+    ['dragenter', 'dragover'].forEach(evt => {
+        chloroDrop.addEventListener(evt, e => e.preventDefault());
+        mitoDrop.addEventListener(evt, e => e.preventDefault());
+    });
 
     chloroDrop.addEventListener('drop', e => {
         e.preventDefault(); const id = e.dataTransfer.getData('text');
         if (id === 'h2o' || id === 'co2') {
             const original = document.getElementById(id);
             if(!original) return;
-            // 防呆：如果收集籃裡已經有了，就不重複疊加
             if (chloroDrop.innerHTML.includes(id)) return;
             const el = original.cloneNode(true);
             el.id = id + '-' + Date.now(); 
@@ -335,7 +349,6 @@
         if (id === 'o2' || id === 'glu') {
             const original = document.getElementById(id);
             if(!original) return;
-            // 防呆
             if (mitoDrop.innerHTML.includes(id)) return;
             const el = original.cloneNode(true);
             el.id = id + '-' + Date.now();
