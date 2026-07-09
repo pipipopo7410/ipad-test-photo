@@ -28,7 +28,6 @@
             --stoma-co2-y: 93%;
             --stoma-o2-x: 36%;  
             --stoma-o2-y: 93%;
-            /* 調整氣孔中心定錨，向左微移以精準對齊底圖 */
             --stoma-center-x: 31.5%; 
             --starch-x: 50%; 
             --starch-y: 50%; 
@@ -134,7 +133,6 @@
         body.night-mode #stage { filter: brightness(0.5) contrast(1.1); }
         #lighting-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255, 255, 200, 0) 0%, transparent 100%); pointer-events: none; z-index: 1; transition: background 0.3s ease; }
         
-        /* 氣孔：白天維持原樣，加入 Transform 以便黑夜時左右扁平化 */
         #stoma-gate { 
             position: absolute; 
             left: var(--stoma-center-x); 
@@ -148,7 +146,6 @@
             z-index: 5; 
             transform: translate(-50%, -50%) scaleX(1); 
         }
-        /* 黑夜模式：高度不變，改用 scaleX(0.15) 讓它往中央「左右夾緊閉合」 */
         body.night-mode #stoma-gate { 
             border-color: #2E7D32; 
             background: rgba(0,0,0,0.6); 
@@ -418,6 +415,24 @@
         btnDayNight.style.background = "#ffb300"; btnDayNight.style.color = "#333";
         sliderLight.value = 0; document.getElementById('txt-light').innerText = 0;
         lightOverlay.style.background = `linear-gradient(to bottom, rgba(255, 255, 200, 0) 0%, transparent 100%)`;
+        
+        // 捕捉當前畫面上所有光合作用粒子，將其定格在當前渲染位置，並在原地優雅淡出
+        document.querySelectorAll('.photo-particle').forEach(p => {
+            const rect = p.getBoundingClientRect();
+            const stageRect = stage.getBoundingClientRect();
+            
+            p.style.left = (rect.left - stageRect.left + rect.width / 2) + 'px';
+            p.style.top = (rect.top - stageRect.top + rect.height / 2) + 'px';
+            p.style.transform = 'translate(-50%, -50%)';
+            p.style.animation = 'none'; 
+            p.style.transition = 'opacity 3s ease-out'; 
+            
+            requestAnimationFrame(() => {
+                p.style.opacity = '0';
+            });
+            
+            setTimeout(() => { p.remove(); }, 3000);
+        });
     }
 
     function updateSystem() {
@@ -476,28 +491,37 @@
     function triggerPhotosynthesisWave(delayTime) {
         let currentPhotoRate = photoRate;
         if (currentPhotoRate === 0) return;
+        
         let flightTime = 4.5 - (currentPhotoRate / 100) * 3.0;
         let totalDelayMs = (flightTime * 1000) + 500;
 
         setTimeout(() => {
             if (photoRate === 0) return;
-            createParticle('H₂O', 'p-h2o', `h2oToChloro ${flightTime}s linear`);
-            createParticle('CO₂', 'p-co2', `co2ToChloro ${flightTime}s linear`);
+            
+            createParticle('H₂O', 'p-h2o photo-particle', `h2oToChloro ${flightTime}s linear`);
+            createParticle('CO₂', 'p-co2 photo-particle', `co2ToChloro ${flightTime}s linear`);
             
             setTimeout(() => {
-                let toMito = (respRate > 0 && !isNight && (photoCycleCounter % 3 === 0) && delayTime === 0);
+                if (photoRate === 0) return; 
+                
+                let modDay = photoCycleCounter % 5;
+                let toMito = (respRate > 0 && !isNight && currentStage === 2 && (modDay === 0 || modDay === 2 || modDay === 4) && delayTime === 0);
+                
                 if (toMito) {
+                    let totalDelayRespMs = (flightTime * 1000); 
+
                     createParticle('O₂', 'p-o2', `chloroToMitoO2 ${flightTime}s linear`);
                     createParticle('葡萄糖', 'p-glu', `chloroToMitoGlu ${flightTime}s linear`);
                     
                     setTimeout(() => {
+                        if (photoRate === 0 && isNight) return; 
                         createParticle('CO₂', 'p-co2', `mitoToChloroCO2 ${flightTime}s linear`); 
                         createParticle('H₂O', 'p-h2o', `mitoToCellH2O ${flightTime}s ease-in`);
                         createParticle('⚡', 'p-energy', `energyBurst ${flightTime}s ease-out`);
-                    }, totalDelayMs);
+                    }, totalDelayRespMs);
                 } else {
-                    createParticle('O₂', 'p-o2', `chloroToStomaO2 ${flightTime}s ease-out`); 
-                    createParticle('葡萄糖', 'p-glu', `chloroToCenterGlu ${flightTime}s ease-out`, true); 
+                    createParticle('O₂', 'p-o2 photo-particle', `chloroToStomaO2 ${flightTime}s ease-out`); 
+                    createParticle('葡萄糖', 'p-glu photo-particle', `chloroToCenterGlu ${flightTime}s ease-out`, true); 
                 }
             }, totalDelayMs);
         }, delayTime);
@@ -512,9 +536,10 @@
 
         if (respRate > 0 && isNight && currentStage === 2) {
             respTick++;
-            if (respTick % 5 === 0) {
-                let respFlightTime = 4.5 - (respRate / 15) * 2.5;
-                let respDelayMs = (respFlightTime * 1000) + 500;
+            let modNight = respTick % 5;
+            if (modNight === 0 || modNight === 2 || modNight === 4) {
+                let respFlightTime = 4.5 - (respRate / 15) * 2.5; 
+                let respDelayMs = (respFlightTime * 1000); 
 
                 createParticle('O₂', 'p-o2', `stomaToMitoO2 ${respFlightTime}s ease-out`);
                 createParticle('葡萄糖', 'p-glu', `starchToMitoGlu ${respFlightTime}s ease-out`);
